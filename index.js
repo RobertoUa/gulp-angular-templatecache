@@ -22,7 +22,12 @@ var MODULE_TEMPLATES = {
   },
 
   browserify: {
-    header: 'module.exports = '
+    header: '\'use strict\'; module.exports = '
+  },
+
+  iife: {
+    header: '(function(){',
+      footer: '})();'
   }
 
 };
@@ -34,6 +39,10 @@ var MODULE_TEMPLATES = {
 function templateCacheFiles(root, base) {
 
   return function templateCacheFile(file, callback) {
+    if (file.processedByTemplateCache) {
+      return callback(null, file);
+    }
+
     var template = '$templateCache.put("<%= url %>","<%= contents %>");';
     var url;
 
@@ -68,6 +77,8 @@ function templateCacheFiles(root, base) {
       file: file
     }));
 
+    file.processedByTemplateCache = true;
+
     callback(null, file);
 
   };
@@ -85,7 +96,7 @@ function templateCacheStream(root, base) {
    */
 
   if (typeof base !== 'function' && base && base.substr(-1) !== path.sep) {
-    base += '/';
+    base += path.sep;
   }
 
   /**
@@ -143,17 +154,27 @@ function templateCache(filename, options) {
   }
 
   /**
+   * Prepare header / footer
+   */
+
+  var templateHeader = options.templateHeader || TEMPLATE_HEADER;
+  var templateFooter = options.templateFooter || TEMPLATE_FOOTER;
+
+
+  /**
    * Build templateCache
    */
 
   return es.pipeline(
     templateCacheStream(options.root || '', options.base),
     concat(filename),
-    header(TEMPLATE_HEADER, {
+    header(templateHeader, {
       module: options.module || DEFAULT_MODULE,
       standalone: options.standalone ? ', []' : ''
     }),
-    footer(TEMPLATE_FOOTER),
+    footer(templateFooter, {
+      module: options.module || DEFAULT_MODULE
+    }),
     wrapInModule(options.moduleSystem)
   );
 

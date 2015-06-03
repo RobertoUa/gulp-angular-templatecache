@@ -36,7 +36,7 @@ npm install gulp-angular-templatecache --save-dev
 var templateCache = require('gulp-angular-templatecache');
 
 gulp.task('default', function () {
-	gulp.src('templates/**/*.html')
+	return gulp.src('templates/**/*.html')
 		.pipe(templateCache())
 		.pipe(gulp.dest('public'));
 });
@@ -65,6 +65,10 @@ Include this file in your app and AngularJS will use the $templateCache when ava
 
 __Note:__ this plugin will __not__ create a new AngularJS module by default, but use a module called `templates`. If you would like to create a new module, set [options.standalone](https://github.com/miickel/gulp-angular-templatecache#standalone---boolean-standalonefalse) to `true`.
 
+__Note:__ if you use Visual Studio on Windows, you might encounter this error message: `ASPNETCOMPILER : error ASPRUNTIME: The specified path, file name, or both are too long. The fully qualified file name must be less than 260 characters, and the directory name must be less than 248 characters.`
+
+This is most likely due to long path names, and can be fixed by adding `lodash.bind` as a dev dependecy in your package.json. Anyway, if you encounter this error, please drop a note in #62, and we might merge #63.
+
 
 ## API
 
@@ -78,7 +82,7 @@ gulp-angular-templatecache([filename](https://github.com/miickel/gulp-angular-te
 
 ### options
 
-#### root - {string} [root='']
+#### root - {string}
 
 > Prefix for template URLs.
 
@@ -94,9 +98,25 @@ gulp-angular-templatecache([filename](https://github.com/miickel/gulp-angular-te
 
 > Override file base path.
 
-#### moduleSystem {string} [moduleSystem]
+#### moduleSystem {string}
 
-> Wrap the templateCache in a module system. Currently supported systems: `RequireJS`, `Browserify`.
+> Wrap the templateCache in a module system. Currently supported systems: `RequireJS`, `Browserify` and `IIFE` (Immediately-Invoked Function Expression).
+
+#### templateHeader {string} [templateHeader=see below]
+
+> Override template header.
+
+```js
+var TEMPLATE_HEADER = 'angular.module("<%= module %>"<%= standalone %>).run(["$templateCache", function($templateCache) {';
+```
+
+#### templateFooter {string} [templateFooter=see below]
+
+> Override template footer.
+
+```js
+var TEMPLATE_FOOTER = '}]);';
+```
 
 
 ## Changes
