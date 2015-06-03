@@ -56,8 +56,8 @@ function templateCacheFiles(root, base) {
       url = path.join(root, base(file));
     } else {
       url = path.join(root, file.path.replace(base || file.base, ''));
-      url = url.replace(/(http.?:)\//, '$1' + '//');
     }
+    url = url.replace(/(http.?:)\//, '$1' + '//');
 
     /**
      * Normalize url (win only)
